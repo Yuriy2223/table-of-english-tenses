@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблиця англійських часів - Інтерактивний довідник</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-main: #f5f7fa;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #333;
+            --future-color: #3498db;
+            --present-color: #2ecc71;
+            --past-color: #e74c3c;
+            --hover-bg: #ecf0f1;
+            --accent: #9b59b6;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --border-color: #555;
+            --hover-bg: #0f3460;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--future-color), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .header .meta {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .controls {
+            max-width: 1400px;
+            margin: 0 auto 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-theme {
+            background: var(--text-primary);
+            color: var(--bg-card);
+        }
+
+        .legend {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            padding: 15px 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            animation: fadeIn 1s ease;
+        }
+
+        .legend h3 {
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-size: 1.1em;
+        }
+
+        .legend-items {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid var(--border-color);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            text-align: center;
+            vertical-align: middle;
+            background: var(--bg-card);
+            transition: all 0.3s ease;
+        }
+
+        tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        .left-label {
+            font-weight: bold;
+            font-size: 18px;
+            width: 80px;
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+            color: #333;
+        }
+
+        [data-theme="dark"] .left-label {
+            background: linear-gradient(135deg, #555, #333);
+            color: #eee;
+        }
+
+        .right-label {
+            font-size: 13px;
+            font-weight: 600;
+            width: 70px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 10px 8px;
+            letter-spacing: 2px;
+        }
+
+        .right-label.future {
+            background: var(--future-color);
+            color: white;
+        }
+
+        .right-label.present {
+            background: var(--present-color);
+            color: white;
+        }
+
+        .right-label.past {
+            background: var(--past-color);
+            color: white;
+        }
+
+        .cell-group {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            justify-content: center;
+        }
+
+        .pronouns {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 15px;
+            min-width: 80px;
+        }
+
+        .pronouns-item {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .brace {
+            font-size: 60px;
+            line-height: 1;
+            margin: 0 -5px;
+            color: var(--text-primary);
+            opacity: 0.7;
+        }
+
+        .verb-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            min-width: 100px;
+        }
+
+        .verb-item {
+            font-weight: bold;
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .section-cell {
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .section-cell:hover {
+            background: var(--hover-bg);
+        }
+
+        .section-cell.hidden-mode {
+            background: #95a5a6;
+            color: transparent;
+        }
+
+        .section-cell.hidden-mode .pronouns-item,
+        .section-cell.hidden-mode .verb-item,
+        .section-cell.hidden-mode .brace {
+            visibility: hidden;
+        }
+
+        .section-cell.revealed {
+            animation: reveal 0.5s ease;
+        }
+
+        @keyframes reveal {
+            from {
+                background: var(--accent);
+            }
+            to {
+                background: var(--bg-card);
+            }
+        }
+
+        .example-row {
+            display: none;
+            background: #f8f9fa;
+        }
+
+        [data-theme="dark"] .example-row {
+            background: #0f3460;
+        }
+
+        .example-row.show {
+            display: table-row;
+            animation: slideDown 0.3s ease;
+        }
+
+        .example-content {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .example-content h4 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .example-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .example-item {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .controls, .legend, .footer {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .example-row {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .container {
+                padding: 15px;
+            }
+            table {
+                font-size: 12px;
+            }
+            .brace {
+                font-size: 40px;
+            }
+            .controls {
+                gap: 10px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 Таблиця англійських часів</h1>
+        <p>Інтерактивний довідник з допоміжних дієслів</p>
+        <div class="meta">
+            <span>📅 Оновлено: <span id="currentDate"></span></span> | 
+            <span>✨ Версія 2.0</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" onclick="toggleTrainingMode()">
+            <span id="trainingIcon">🎯</span> <span id="trainingText">Режим тренування</span>
+        </button>
+        <button class="btn btn-secondary" onclick="toggleExamples()">
+            📝 Показати приклади
+        </button>
+        <button class="btn btn-secondary" onclick="window.print()">
+            🖨️ Друкувати
+        </button>
+        <button class="btn btn-theme" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span> Тема
+        </button>
+        <button class="btn btn-secondary" onclick="resetProgress()">
+            🔄 Скинути
+        </button>
+    </div>
+
+    <div class="legend">
+        <h3>🎨 Легенда:</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--future-color);"></div>
+                <span>Майбутній час (Future)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--present-color);"></div>
+                <span>Теперішній час (Present)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--past-color);"></div>
+                <span>Минулий час (Past)</span>
+            </div>
+            <div class="legend-item">
+                <span>💡 Підказка: Клікніть на комірку в режимі тренування, щоб відкрити відповідь</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="table-wrapper">
+            <table id="mainTable">
+                <thead>
+                    <tr>
+                        <th class="left-label"></th>
+                        <th colspan="2">ПИТАННЯ</th>
+                        <th colspan="2">СТВЕРДЖЕННЯ</th>
+                        <th colspan="2">ЗАПЕРЕЧЕННЯ</th>
+                        <th class="right-label"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- WILL row -->
+                    <tr>
+                        <td class="left-label">WILL</td>
+                        <td class="section-cell" data-section="question">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="question">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVE ?</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="verb-form">
+                                <div class="verb-item">WILL</div>
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="verb-form">
+                                <div class="verb-item">WILL</div>
+                                <div class="verb-item">NOT</div>
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="right-label future">МАЙБУТНЄ</td>
+                    </tr>
+                    <tr class="example-row" data-row="will">
+                        <td colspan="8">
+                            <div class="example-content">
+                                <h4>📖 Приклади використання WILL:</h4>
+                                <div class="example-list">
+                                    <div class="example-item">❓ Will you love me? - Ти будеш любити мене?</div>
+                                    <div class="example-item">✅ I will love you forever - Я буду любити тебе завжди</div>
+                                    <div class="example-item">❌ She will not love him - Вона не буде любити його</div>
+                                    <div class="example-item">❓ Will they come? - Вони прийдуть?</div>
+                                    <div class="example-item">✅ We will go tomorrow - Ми підемо завтра</div>
+                                    <div class="example-item">❌ He will not forget - Він не забуде</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- DO row -->
+                    <tr>
+                        <td class="left-label">DO</td>
+                        <td class="section-cell" data-section="question">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="question">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVE ?</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="verb-form">
+                                <div class="verb-item">DON'T</div>
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="right-label present">ТЕПЕРІШНЄ</td>
+                    </tr>
+                    <tr class="example-row" data-row="do">
+                        <td colspan="8">
+                            <div class="example-content">
+                                <h4>📖 Приклади використання DO:</h4>
+                                <div class="example-list">
+                                    <div class="example-item">❓ Do you love coffee? - Ти любиш каву?</div>
+                                    <div class="example-item">✅ I love music - Я люблю музику</div>
+                                    <div class="example-item">❌ They don't love winter - Вони не люблять зиму</div>
+                                    <div class="example-item">❓ Do we need help? - Нам потрібна допомога?</div>
+                                    <div class="example-item">✅ You speak English - Ти говориш англійською</div>
+                                    <div class="example-item">❌ I don't understand - Я не розумію</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- DOES row -->
+                    <tr>
+                        <td class="left-label">DOES</td>
+                        <td class="section-cell" data-section="question">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="question">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVE ?</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVES</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="verb-form">
+                                <div class="verb-item">DOESN'T</div>
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="right-label present">ТЕПЕРІШНЄ</td>
+                    </tr>
+                    <tr class="example-row" data-row="does">
+                        <td colspan="8">
+                            <div class="example-content">
+                                <h4>📖 Приклади використання DOES:</h4>
+                                <div class="example-list">
+                                    <div class="example-item">❓ Does he love her? - Він любить її?</div>
+                                    <div class="example-item">✅ She loves cats - Вона любить котів</div>
+                                    <div class="example-item">❌ He doesn't love sports - Він не любить спорт</div>
+                                    <div class="example-item">❓ Does it work? - Це працює?</div>
+                                    <div class="example-item">✅ He speaks French - Він говорить французькою</div>
+                                    <div class="example-item">❌ She doesn't know - Вона не знає</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- DID row -->
+                    <tr>
+                        <td class="left-label">DID</td>
+                        <td class="section-cell" data-section="question">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="question">
+                            <div class="verb-form">
+                                <div class="verb-item">LOVE ?</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="affirmative">
+                            <div class="verb-form">
+                                <div class="verb-item">SAW</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="cell-group">
+                                <div class="pronouns">
+                                    <div class="pronouns-item">I</div>
+                                    <div class="pronouns-item">YOU</div>
+                                    <div class="pronouns-item">WE</div>
+                                    <div class="pronouns-item">THEY</div>
+                                    <div class="pronouns-item">HE</div>
+                                    <div class="pronouns-item">SHE</div>
+                                </div>
+                                <div class="brace">}</div>
+                            </div>
+                        </td>
+                        <td class="section-cell" data-section="negative">
+                            <div class="verb-form">
+                                <div class="verb-item">DID</div>
+                                <div class="verb-item">NOT</div>
+                                <div class="verb-item">LOVE</div>
+                            </div>
+                        </td>
+                        <td class="right-label past">МИНУЛЕ</td>
+                    </tr>
+                    <tr class="example-row" data-row="did">
+                        <td colspan="8">
+                            <div class="example-content">
+                                <h4>📖 Приклади використання DID:</h4>
+                                <div class="example-list">
+                                    <div class="example-item">❓ Did you love the movie? - Тобі сподобався фільм?</div>
+                                    <div class="example-item">✅ I saw him yesterday - Я бачив його вчора</div>
+                                    <div class="example-item">❌ She did not love it - Їй це не сподобалось</div>
+                                    <div class="example-item">❓ Did they go? - Вони пішли?</div>
+                                    <div class="example-item">✅ We finished the work - Ми закінчили роботу</div>
+                                    <div class="example-item">❌ He did not understand - Він не зрозумів</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>💡 <strong>Порада:</strong> Використовуйте режим тренування, щоб перевірити свої знання!</p>
+        <p>Створено для ефективного вивчення англійської мови 🚀</p>
+    </div>
+
+    <script>
+        // Set current date
+        const months = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 
+                       'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
+        const now = new Date();
+        document.getElementById('currentDate').textContent = 
+            `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+        // Training mode
+        let trainingMode = false;
+        let hiddenSections = new Set();
+
+        function toggleTrainingMode() {
+            trainingMode = !trainingMode;
+            const cells = document.querySelectorAll('.section-cell');
+            const btn = document.getElementById('trainingText');
+            const icon = document.getElementById('trainingIcon');
+            
+            if (trainingMode) {
+                btn.textContent = 'Вимкнути тренування';
+                icon.textContent = '👁️';
+                cells.forEach(cell => {
+                    cell.classList.add('hidden-mode');
+                    cell.addEventListener('click', revealCell);
+                });
+            } else {
+                btn.textContent = 'Режим тренування';
+                icon.textContent = '🎯';
+                cells.forEach(cell => {
+                    cell.classList.remove('hidden-mode', 'revealed');
+                    cell.removeEventListener('click', revealCell);
+                });
+                hiddenSections.clear();
+            }
+        }
+
+        function revealCell(e) {
+            if (trainingMode) {
+                e.currentTarget.classList.remove('hidden-mode');
+                e.currentTarget.classList.add('revealed');
+            }
+        }
+
+        // Toggle examples
+        let examplesVisible = false;
+        function toggleExamples() {
+            examplesVisible = !examplesVisible;
+            const examples = document.querySelectorAll('.example-row');
+            examples.forEach(row => {
+                if (examplesVisible) {
+                    row.classList.add('show');
+                } else {
+                    row.classList.remove('show');
+                }
+            });
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '☀️';
+            }
+        });
+
+        // Reset progress
+        function resetProgress() {
+            if (confirm('Скинути весь прогрес тренування?')) {
+                const cells = document.querySelectorAll('.section-cell');
+                cells.forEach(cell => {
+                    cell.classList.remove('hidden-mode', 'revealed');
+                });
+                hiddenSections.clear();
+                if (trainingMode) {
+                    toggleTrainingMode();
+                }
+            }
+        }
+
+        // Add hover tooltips (optional enhancement)
+        const cells = document.querySelectorAll('.section-cell');
+        cells.forEach(cell => {
+            cell.addEventListener('mouseenter', function(e) {
+                if (trainingMode && this.classList.contains('hidden-mode')) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip show';
+                    tooltip.textContent = '👆 Клікніть, щоб відкрити';
+                    tooltip.style.top = (e.pageY - 40) + 'px';
+                    tooltip.style.left = (e.pageX - 70) + 'px';
+                    tooltip.id = 'temp-tooltip';
+                    document.body.appendChild(tooltip);
+                }
+            });
+            
+            cell.addEventListener('mouseleave', function() {
+                const tooltip = document.getElementById('temp-tooltip');
+                if (tooltip) tooltip.remove();
+            });
+        });
+    </script>
+</body>
+</html>
