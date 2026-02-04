@@ -553,13 +553,22 @@ function updateTable(verb) {
       cell.addEventListener('click', revealCell);
     });
   }
+
+  if (examplesVisible) {
+    const allCells = document.querySelectorAll('.section-cell');
+    allCells.forEach((cell) => {
+      const oldExample = cell.querySelector('.cell-example');
+      if (oldExample) oldExample.remove();
+      addExampleToCell(cell);
+    });
+  }
 }
 
 function saveToHistory(verb) {
   let history = JSON.parse(localStorage.getItem('verbHistory') || '[]');
   if (!history.includes(verb)) {
     history.unshift(verb);
-    history = history.slice(0, 10); // Keep only last 10
+    history = history.slice(0, 10);
     localStorage.setItem('verbHistory', JSON.stringify(history));
   }
 }
@@ -593,20 +602,6 @@ function revealCell(e) {
     e.currentTarget.classList.remove('hidden-mode');
     e.currentTarget.classList.add('revealed');
   }
-}
-
-// Toggle examples
-let examplesVisible = false;
-function toggleExamples() {
-  examplesVisible = !examplesVisible;
-  const examples = document.querySelectorAll('.example-row');
-  examples.forEach((row) => {
-    if (examplesVisible) {
-      row.classList.add('show');
-    } else {
-      row.classList.remove('show');
-    }
-  });
 }
 
 // Theme toggle
@@ -644,6 +639,92 @@ function resetProgress() {
     if (trainingMode) {
       toggleTrainingMode();
     }
+  }
+}
+
+let examplesVisible = false;
+function toggleExamples() {
+  examplesVisible = !examplesVisible;
+  const allCells = document.querySelectorAll('.section-cell');
+
+  allCells.forEach((cell) => {
+    if (examplesVisible) {
+      addExampleToCell(cell);
+    } else {
+      const example = cell.querySelector('.cell-example');
+      if (example) example.remove();
+    }
+  });
+}
+
+function addExampleToCell(cell) {
+  if (cell.querySelector('.cell-example')) return;
+
+  const section = cell.getAttribute('data-section');
+  const verb = currentVerb.toLowerCase();
+  const verbUpper = verb.toUpperCase();
+  const thirdPerson = addThirdPersonS(verb);
+  const pastForm = getPastForm(verb);
+  const exampleDiv = document.createElement('div');
+  exampleDiv.className = 'cell-example';
+
+  let exampleText = '';
+
+  // WILL row
+  if (
+    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'WILL'
+  ) {
+    if (section === 'question') {
+      exampleText = `Will you ${verb} me?`;
+    } else if (section === 'affirmative') {
+      exampleText = `I will ${verb} you`;
+    } else if (section === 'negative') {
+      exampleText = `I will not ${verb}`;
+    }
+  }
+
+  // DO row
+  else if (
+    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DO'
+  ) {
+    if (section === 'question') {
+      exampleText = `Do you ${verb} it?`;
+    } else if (section === 'affirmative') {
+      exampleText = `I ${verb} music`;
+    } else if (section === 'negative') {
+      exampleText = `I don't ${verb}`;
+    }
+  }
+
+  // DOES row
+  else if (
+    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DOES'
+  ) {
+    if (section === 'question') {
+      exampleText = `Does he ${verb} her?`;
+    } else if (section === 'affirmative') {
+      exampleText = `She ${thirdPerson} cats`;
+    } else if (section === 'negative') {
+      exampleText = `He doesn't ${verb}`;
+    }
+  }
+
+  // DID row
+  else if (
+    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DID'
+  ) {
+    if (section === 'question') {
+      exampleText = `Did you ${verb} it?`;
+    } else if (section === 'affirmative') {
+      exampleText = `I ${pastForm} yesterday`;
+    } else if (section === 'negative') {
+      exampleText = `I didn't ${verb}`;
+    }
+  }
+
+  if (exampleText) {
+    exampleDiv.textContent = `💡 ${exampleText}`;
+    cell.appendChild(exampleDiv);
   }
 }
 
