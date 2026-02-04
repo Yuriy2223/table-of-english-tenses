@@ -1,4 +1,4 @@
-// Irregular verbs database
+// Irregular verbs database - extended with Phase 1
 const irregularVerbs = {
   go: { past: 'went', translation: 'йти' },
   see: { past: 'saw', translation: 'бачити' },
@@ -126,6 +126,64 @@ const regularVerbs = {
   wash: 'мити',
 };
 
+// PHASE 1: Contextual examples with translations
+const contextualExamples = {
+  love: [
+    { en: 'I will love you forever', ua: 'Я буду любити тебе вічно' },
+    { en: 'Do you love chocolate?', ua: 'Ти любиш шоколад?' },
+    { en: 'She loves her cat very much', ua: 'Вона дуже любить свого кота' },
+    { en: 'They loved the movie', ua: 'Їм сподобався фільм' },
+  ],
+  play: [
+    { en: 'I will play football tomorrow', ua: 'Я гратиму у футбол завтра' },
+    { en: 'Do you play guitar?', ua: 'Ти граєш на гітарі?' },
+    {
+      en: 'He plays video games every day',
+      ua: 'Він грає у відеоігри кожен день',
+    },
+    { en: 'We played chess yesterday', ua: 'Ми грали в шахи вчора' },
+  ],
+  work: [
+    { en: 'I will work hard', ua: 'Я буду працювати наполегливо' },
+    { en: 'Do you work on weekends?', ua: 'Ти працюєш на вихідних?' },
+    { en: 'She works as a teacher', ua: 'Вона працює вчителькою' },
+    { en: 'They worked together', ua: 'Вони працювали разом' },
+  ],
+  study: [
+    { en: 'I will study English', ua: 'Я буду вчити англійську' },
+    { en: 'Do you study every day?', ua: 'Ти вчишся щодня?' },
+    { en: 'He studies at university', ua: 'Він навчається в університеті' },
+    { en: 'We studied math yesterday', ua: 'Ми вчили математику вчора' },
+  ],
+  go: [
+    { en: 'I will go to the park', ua: 'Я піду до парку' },
+    { en: 'Do you go to school?', ua: 'Ти ходиш до школи?' },
+    {
+      en: 'She goes shopping every week',
+      ua: 'Вона ходить за покупками щотижня',
+    },
+    { en: 'They went home', ua: 'Вони пішли додому' },
+  ],
+  see: [
+    { en: 'I will see you tomorrow', ua: 'Я побачу тебе завтра' },
+    { en: 'Do you see that bird?', ua: 'Ти бачиш того птаха?' },
+    { en: 'He sees his friends often', ua: 'Він часто бачиться з друзями' },
+    { en: 'We saw a movie', ua: 'Ми подивилися фільм' },
+  ],
+  eat: [
+    { en: 'I will eat pizza tonight', ua: "Я з'їм піцу сьогодні ввечері" },
+    { en: 'Do you eat meat?', ua: "Ти їси м'ясо?" },
+    { en: 'She eats healthy food', ua: 'Вона їсть здорову їжу' },
+    { en: 'They ate lunch together', ua: 'Вони разом пообідали' },
+  ],
+  default: [
+    { en: 'I will [VERB]', ua: 'Я буду [VERB_UA]' },
+    { en: 'Do you [VERB]?', ua: 'Ти [VERB_UA]?' },
+    { en: 'He/She [VERB]s often', ua: 'Він/Вона часто [VERB_UA]' },
+    { en: 'I [PAST] yesterday', ua: 'Я [VERB_UA] вчора' },
+  ],
+};
+
 // Verb categories
 const categories = {
   actions: ['run', 'jump', 'walk', 'swim', 'fly', 'dance', 'climb'],
@@ -135,7 +193,7 @@ const categories = {
   communication: ['speak', 'talk', 'say', 'tell', 'ask', 'call', 'listen'],
 };
 
-// Popular verbs for quick selection
+// Popular verbs
 const popularVerbs = [
   'love',
   'play',
@@ -161,13 +219,20 @@ const popularVerbs = [
 
 let currentVerb = 'love';
 let trainingMode = false;
+let favorites = [];
+let speechSynth = window.speechSynthesis;
+let voices = [];
+let selectedVoice = null;
+let speechRate = 1;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
   setCurrentDate();
   loadTheme();
+  loadFavorites();
   generateQuickVerbs();
   updateTable('love');
+  initSpeech();
 });
 
 function setCurrentDate() {
@@ -190,11 +255,163 @@ function setCurrentDate() {
     `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 }
 
+// PHASE 1: Speech Synthesis
+function initSpeech() {
+  if ('speechSynthesis' in window) {
+    voices = speechSynth.getVoices();
+    if (voices.length === 0) {
+      speechSynth.addEventListener('voiceschanged', () => {
+        voices = speechSynth.getVoices();
+        populateVoiceList();
+      });
+    } else {
+      populateVoiceList();
+    }
+  }
+}
+
+function populateVoiceList() {
+  const voiceSelect = document.getElementById('voiceSelect');
+  voiceSelect.innerHTML = '';
+
+  const englishVoices = voices.filter((voice) => voice.lang.startsWith('en-'));
+
+  englishVoices.forEach((voice, index) => {
+    const option = document.createElement('option');
+    option.textContent = `${voice.name} (${voice.lang})`;
+    option.value = index;
+    voiceSelect.appendChild(option);
+  });
+
+  const preferredVoice = englishVoices.findIndex(
+    (v) => v.lang === 'en-US' || v.lang === 'en-GB'
+  );
+  if (preferredVoice !== -1) {
+    voiceSelect.value = preferredVoice;
+    selectedVoice = englishVoices[preferredVoice];
+  } else if (englishVoices.length > 0) {
+    selectedVoice = englishVoices[0];
+  }
+
+  voiceSelect.addEventListener('change', (e) => {
+    selectedVoice = englishVoices[e.target.value];
+  });
+
+  document.getElementById('rateSelect').addEventListener('change', (e) => {
+    speechRate = parseFloat(e.target.value);
+  });
+}
+
+function speak(text) {
+  if (!speechSynth) return;
+  speechSynth.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice =
+    selectedVoice || voices.find((v) => v.lang.startsWith('en-'));
+  utterance.rate = speechRate;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  speechSynth.speak(utterance);
+}
+
+function speakCurrentVerb() {
+  const verb = currentVerb;
+  const thirdPerson = addThirdPersonS(verb);
+  const past = getPastForm(verb);
+
+  const sentences = [
+    `I will ${verb}`,
+    `Do you ${verb}?`,
+    `He ${thirdPerson}`,
+    `I ${past} yesterday`,
+  ];
+
+  sentences.forEach((sentence, index) => {
+    setTimeout(() => speak(sentence), index * 2000);
+  });
+}
+
+function toggleVoiceSettings() {
+  const settings = document.getElementById('voiceSettings');
+  settings.classList.toggle('show');
+}
+
+// PHASE 1: Favorites
+function loadFavorites() {
+  favorites = JSON.parse(localStorage.getItem('favoriteVerbs') || '[]');
+  updateFavoriteBtn();
+  updateFavoritesList();
+}
+
+function saveFavorites() {
+  localStorage.setItem('favoriteVerbs', JSON.stringify(favorites));
+}
+
+function toggleFavorite() {
+  const verb = currentVerb.toLowerCase();
+  const index = favorites.indexOf(verb);
+
+  if (index === -1) {
+    favorites.push(verb);
+  } else {
+    favorites.splice(index, 1);
+  }
+
+  saveFavorites();
+  updateFavoriteBtn();
+  updateFavoritesList();
+  generateQuickVerbs();
+}
+
+function updateFavoriteBtn() {
+  const btn = document.getElementById('favoriteBtn');
+  const isFavorite = favorites.includes(currentVerb.toLowerCase());
+
+  if (isFavorite) {
+    btn.classList.add('favorite-active');
+    btn.innerHTML = '⭐ Видалити з улюблених';
+  } else {
+    btn.classList.remove('favorite-active');
+    btn.innerHTML = '⭐ Додати до улюблених';
+  }
+}
+
+function updateFavoritesList() {
+  const section = document.getElementById('favoritesSection');
+  const container = document.getElementById('favoritesList');
+
+  if (favorites.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  container.innerHTML = '';
+
+  favorites.forEach((verb) => {
+    const span = document.createElement('span');
+    span.className = 'quick-verb favorite';
+    span.textContent = verb;
+    span.onclick = () => {
+      document.getElementById('verbInput').value = verb;
+      applyVerb();
+    };
+    container.appendChild(span);
+  });
+}
+
 function generateQuickVerbs() {
   const container = document.getElementById('quickVerbList');
+  container.innerHTML = '';
+
   popularVerbs.forEach((verb) => {
     const span = document.createElement('span');
     span.className = 'quick-verb';
+    if (favorites.includes(verb)) {
+      span.classList.add('favorite');
+    }
     span.textContent = verb;
     span.onclick = () => {
       document.getElementById('verbInput').value = verb;
@@ -226,6 +443,7 @@ function applyVerb() {
     updateVerbInfo(input);
     updateTable(input);
     saveToHistory(input);
+    updateFavoriteBtn();
   }
 }
 
@@ -247,319 +465,322 @@ function updateVerbInfo(verb) {
 }
 
 function addThirdPersonS(verb) {
-  // Special cases
   if (verb === 'have') return 'has';
   if (verb === 'be') return 'is';
-
-  // Ends with -s, -ss, -sh, -ch, -x, -o, -z
   if (/[sxz]$/.test(verb) || /[cs]h$/.test(verb) || /o$/.test(verb)) {
     return verb + 'es';
   }
-
-  // Ends with consonant + y
   if (/[^aeiou]y$/.test(verb)) {
     return verb.slice(0, -1) + 'ies';
   }
-
-  // Default: add -s
   return verb + 's';
 }
 
 function getPastForm(verb) {
-  // Check if irregular
   if (irregularVerbs.hasOwnProperty(verb)) {
     return irregularVerbs[verb].past;
   }
-
-  // Regular verb rules
-  // Ends with -e
   if (/e$/.test(verb)) {
     return verb + 'd';
   }
-
-  // Ends with consonant + y
   if (/[^aeiou]y$/.test(verb)) {
     return verb.slice(0, -1) + 'ied';
   }
-
-  // CVC pattern (consonant-vowel-consonant) - double last consonant
   if (/[^aeiou][aeiou][^aeiouwy]$/.test(verb) && verb.length > 2) {
     return verb + verb.slice(-1) + 'ed';
   }
-
-  // Default: add -ed
   return verb + 'ed';
+}
+
+// PHASE 1: Get contextual examples
+function getExamples(verb) {
+  const examples = contextualExamples[verb] || contextualExamples.default;
+  const translation =
+    irregularVerbs[verb]?.translation || regularVerbs[verb] || verb;
+  const past = getPastForm(verb);
+
+  return examples.map((ex) => ({
+    en: ex.en.replace('[VERB]', verb).replace('[PAST]', past),
+    ua: ex.ua.replace('[VERB_UA]', translation),
+  }));
 }
 
 function updateTable(verb) {
   const verbUpper = verb.toUpperCase();
   const thirdPerson = addThirdPersonS(verb).toUpperCase();
   const pastForm = getPastForm(verb).toUpperCase();
+  const translation =
+    irregularVerbs[verb]?.translation || regularVerbs[verb] || '';
+
+  const examples = getExamples(verb);
 
   const tableBody = document.getElementById('tableBody');
   tableBody.innerHTML = `
-                <!-- WILL row -->
-                <tr>
-                    <td class="left-label">WILL</td>
-                    <td class="section-cell" data-section="question">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="question">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${verbUpper} ?</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="verb-form">
-                            <div class="verb-item">WILL</div>
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="verb-form">
-                            <div class="verb-item">WILL</div>
-                            <div class="verb-item">NOT</div>
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="right-label future">МАЙБУТНЄ</td>
-                </tr>
+    <tr>
+      <td class="left-label">WILL</td>
+      <td class="section-cell" data-section="question">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="question">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${verbUpper} ?</div>
+          <button class="speak-btn" onclick="speak('Will you ${verb}?')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="verb-form">
+          <div class="verb-item">WILL</div>
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('I will ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="verb-form">
+          <div class="verb-item">WILL</div>
+          <div class="verb-item">NOT</div>
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('I will not ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="right-label future">МАЙБУТНЄ</td>
+    </tr>
 
-                <!-- DO row -->
-                <tr>
-                    <td class="left-label">DO</td>
-                    <td class="section-cell" data-section="question">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="question">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${verbUpper} ?</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="verb-form">
-                            <div class="verb-item">DON'T</div>
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="right-label present">ТЕПЕРІШНЄ</td>
-                </tr>
+    <tr>
+      <td class="left-label">DO</td>
+      <td class="section-cell" data-section="question">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="question">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${verbUpper} ?</div>
+          <button class="speak-btn" onclick="speak('Do you ${verb}?')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('I ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="verb-form">
+          <div class="verb-item">DON'T</div>
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('I don\\'t ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="right-label present">ТЕПЕРІШНЄ</td>
+    </tr>
 
-                <!-- DOES row -->
-                <tr>
-                    <td class="left-label">DOES</td>
-                    <td class="section-cell" data-section="question">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="question">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${verbUpper} ?</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${thirdPerson}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="verb-form">
-                            <div class="verb-item">DOESN'T</div>
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="right-label present">ТЕПЕРІШНЄ</td>
-                </tr>
+    <tr>
+      <td class="left-label">DOES</td>
+      <td class="section-cell" data-section="question">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="question">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${verbUpper} ?</div>
+          <button class="speak-btn" onclick="speak('Does he ${verb}?')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${thirdPerson}</div>
+          <button class="speak-btn" onclick="speak('He ${addThirdPersonS(verb)}')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="verb-form">
+          <div class="verb-item">DOESN'T</div>
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('He doesn\\'t ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="right-label present">ТЕПЕРІШНЄ</td>
+    </tr>
 
-                <!-- DID row -->
-                <tr>
-                    <td class="left-label">DID</td>
-                    <td class="section-cell" data-section="question">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="question">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${verbUpper} ?</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="affirmative">
-                        <div class="verb-form">
-                            <div class="verb-item verb-highlight">${pastForm}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="cell-group">
-                            <div class="pronouns">
-                                <div class="pronouns-item">I</div>
-                                <div class="pronouns-item">YOU</div>
-                                <div class="pronouns-item">WE</div>
-                                <div class="pronouns-item">THEY</div>
-                                <div class="pronouns-item">HE</div>
-                                <div class="pronouns-item">SHE</div>
-                            </div>
-                            <div class="brace">}</div>
-                        </div>
-                    </td>
-                    <td class="section-cell" data-section="negative">
-                        <div class="verb-form">
-                            <div class="verb-item">DID</div>
-                            <div class="verb-item">NOT</div>
-                            <div class="verb-item verb-highlight">${verbUpper}</div>
-                        </div>
-                    </td>
-                    <td class="right-label past">МИНУЛЕ</td>
-                </tr>
+    <tr>
+      <td class="left-label">DID</td>
+      <td class="section-cell" data-section="question">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="question">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${verbUpper} ?</div>
+          <button class="speak-btn" onclick="speak('Did you ${verb}?')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="affirmative">
+        <div class="verb-form">
+          <div class="verb-item verb-highlight">${pastForm}</div>
+          <button class="speak-btn" onclick="speak('I ${getPastForm(verb)}')">🔊</button>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="cell-group">
+          <div class="pronouns">
+            <div class="pronouns-item">I</div>
+            <div class="pronouns-item">YOU</div>
+            <div class="pronouns-item">WE</div>
+            <div class="pronouns-item">THEY</div>
+            <div class="pronouns-item">HE</div>
+            <div class="pronouns-item">SHE</div>
+          </div>
+          <div class="brace">}</div>
+        </div>
+      </td>
+      <td class="section-cell" data-section="negative">
+        <div class="verb-form">
+          <div class="verb-item">DID</div>
+          <div class="verb-item">NOT</div>
+          <div class="verb-item verb-highlight">${verbUpper}</div>
+          <button class="speak-btn" onclick="speak('I did not ${verb}')">🔊</button>
+        </div>
+      </td>
+      <td class="right-label past">МИНУЛЕ</td>
+    </tr>
 
-                <!-- EXAMPLES ROW -->
-                <tr class="example-row">
-                    <td colspan="8" class="example-content">
-                        <h4>📝 Приклади речень з "${verb}" (${irregularVerbs[verb]?.translation || regularVerbs[verb] || ''}):</h4>
-                        <div class="example-list">
-                            <div class="example-item">🔮 Future: I will ${verb} tomorrow</div>
-                            <div class="example-item">✅ Present: I ${verb} every day</div>
-                            <div class="example-item">👤 Present (3rd): He/She ${addThirdPersonS(verb)} often</div>
-                            <div class="example-item">⏪ Past: I ${getPastForm(verb)} yesterday</div>
-                            <div class="example-item">❌ Negative: I don't ${verb}</div>
-                            <div class="example-item">❓ Question: Do you ${verb}?</div>
-                            <div class="example-item">❌ Past Negative: I didn't ${verb}</div>
-                            <div class="example-item">❓ Past Question: Did you ${verb}?</div>
-                        </div>
-                    </td>
-                </tr>
-            `;
+    <tr class="example-row">
+      <td colspan="8">
+        <div class="example-content">
+          <h4>📝 Контекстні приклади з "${verb}" (${translation}):</h4>
+          <div class="example-list">
+            ${examples
+              .map(
+                (ex) => `
+              <div class="example-item">
+                <div class="example-english">${ex.en}
+                  <button class="speak-btn-small" onclick="speak('${ex.en.replace(/'/g, "\\'")}')">🔊</button>
+                </div>
+                <div class="example-ukrainian">${ex.ua}</div>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
 
-  // Re-attach event listeners if in training mode
   if (trainingMode) {
     const cells = document.querySelectorAll('.section-cell');
     cells.forEach((cell) => {
       cell.classList.add('hidden-mode');
       cell.addEventListener('click', revealCell);
-    });
-  }
-
-  if (examplesVisible) {
-    const allCells = document.querySelectorAll('.section-cell');
-    allCells.forEach((cell) => {
-      const oldExample = cell.querySelector('.cell-example');
-      if (oldExample) oldExample.remove();
-      addExampleToCell(cell);
     });
   }
 }
@@ -573,7 +794,6 @@ function saveToHistory(verb) {
   }
 }
 
-// Training mode
 function toggleTrainingMode() {
   trainingMode = !trainingMode;
   const cells = document.querySelectorAll('.section-cell');
@@ -604,7 +824,6 @@ function revealCell(e) {
   }
 }
 
-// Theme toggle
 function toggleTheme() {
   const body = document.body;
   const icon = document.getElementById('themeIcon');
@@ -620,7 +839,6 @@ function toggleTheme() {
   }
 }
 
-// Load saved theme
 function loadTheme() {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {
@@ -629,7 +847,6 @@ function loadTheme() {
   }
 }
 
-// Reset progress
 function resetProgress() {
   if (confirm('Скинути весь прогрес тренування?')) {
     const cells = document.querySelectorAll('.section-cell');
@@ -642,93 +859,6 @@ function resetProgress() {
   }
 }
 
-let examplesVisible = false;
-function toggleExamples() {
-  examplesVisible = !examplesVisible;
-  const allCells = document.querySelectorAll('.section-cell');
-
-  allCells.forEach((cell) => {
-    if (examplesVisible) {
-      addExampleToCell(cell);
-    } else {
-      const example = cell.querySelector('.cell-example');
-      if (example) example.remove();
-    }
-  });
-}
-
-function addExampleToCell(cell) {
-  if (cell.querySelector('.cell-example')) return;
-
-  const section = cell.getAttribute('data-section');
-  const verb = currentVerb.toLowerCase();
-  const verbUpper = verb.toUpperCase();
-  const thirdPerson = addThirdPersonS(verb);
-  const pastForm = getPastForm(verb);
-  const exampleDiv = document.createElement('div');
-  exampleDiv.className = 'cell-example';
-
-  let exampleText = '';
-
-  // WILL row
-  if (
-    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'WILL'
-  ) {
-    if (section === 'question') {
-      exampleText = `Will you ${verb} me?`;
-    } else if (section === 'affirmative') {
-      exampleText = `I will ${verb} you`;
-    } else if (section === 'negative') {
-      exampleText = `I will not ${verb}`;
-    }
-  }
-
-  // DO row
-  else if (
-    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DO'
-  ) {
-    if (section === 'question') {
-      exampleText = `Do you ${verb} it?`;
-    } else if (section === 'affirmative') {
-      exampleText = `I ${verb} music`;
-    } else if (section === 'negative') {
-      exampleText = `I don't ${verb}`;
-    }
-  }
-
-  // DOES row
-  else if (
-    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DOES'
-  ) {
-    if (section === 'question') {
-      exampleText = `Does he ${verb} her?`;
-    } else if (section === 'affirmative') {
-      exampleText = `She ${thirdPerson} cats`;
-    } else if (section === 'negative') {
-      exampleText = `He doesn't ${verb}`;
-    }
-  }
-
-  // DID row
-  else if (
-    cell.closest('tr')?.querySelector('.left-label')?.textContent === 'DID'
-  ) {
-    if (section === 'question') {
-      exampleText = `Did you ${verb} it?`;
-    } else if (section === 'affirmative') {
-      exampleText = `I ${pastForm} yesterday`;
-    } else if (section === 'negative') {
-      exampleText = `I didn't ${verb}`;
-    }
-  }
-
-  if (exampleText) {
-    exampleDiv.textContent = `💡 ${exampleText}`;
-    cell.appendChild(exampleDiv);
-  }
-}
-
-// Enter key support
 document.getElementById('verbInput').addEventListener('keypress', function (e) {
   if (e.key === 'Enter') {
     applyVerb();
