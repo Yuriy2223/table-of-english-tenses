@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Таблиця англійських часів</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>📚 Таблиця англійських часів</h1>
+      <p>Інтерактивний довідник з допоміжних дієслів</p>
+      <div class="meta">
+        <span>📅 Оновлено: <span id="currentDate"></span></span> |
+        <span>✨ Версія 2.0</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="toggleTrainingMode()">
+        <span id="trainingIcon">🎯</span>
+        <span id="trainingText">Режим тренування</span>
+      </button>
+      <button class="btn btn-secondary" onclick="toggleExamples()">
+        📝 Показати приклади
+      </button>
+      <button class="btn btn-secondary" onclick="window.print()">
+        🖨️ Друкувати
+      </button>
+      <button class="btn btn-theme" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span> Тема
+      </button>
+      <button class="btn btn-secondary" onclick="resetProgress()">
+        🔄 Скинути
+      </button>
+    </div>
+
+    <div class="legend">
+      <h3>🎨 Легенда:</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div
+            class="legend-color"
+            style="background: var(--future-color)"
+          ></div>
+          <span>Майбутній час (Future)</span>
+        </div>
+        <div class="legend-item">
+          <div
+            class="legend-color"
+            style="background: var(--present-color)"
+          ></div>
+          <span>Теперішній час (Present)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--past-color)"></div>
+          <span>Минулий час (Past)</span>
+        </div>
+        <div class="legend-item">
+          <span
+            >💡 Підказка: Клікніть на комірку в режимі тренування, щоб відкрити
+            відповідь</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="table-wrapper">
+        <table id="mainTable">
+          <thead>
+            <tr>
+              <th class="left-label"></th>
+              <th colspan="2">ПИТАННЯ</th>
+              <th colspan="2">СТВЕРДЖЕННЯ</th>
+              <th colspan="2">ЗАПЕРЕЧЕННЯ</th>
+              <th class="right-label"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- WILL row -->
+            <tr>
+              <td class="left-label">WILL</td>
+              <td class="section-cell" data-section="question">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="question">
+                <div class="verb-form">
+                  <div class="verb-item">LOVE ?</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="verb-form">
+                  <div class="verb-item">WILL</div>
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="verb-form">
+                  <div class="verb-item">WILL</div>
+                  <div class="verb-item">NOT</div>
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="right-label future">МАЙБУТНЄ</td>
+            </tr>
+            <tr class="example-row" data-row="will">
+              <td colspan="8">
+                <div class="example-content">
+                  <h4>📖 Приклади використання WILL:</h4>
+                  <div class="example-list">
+                    <div class="example-item">
+                      ❓ Will you love me? - Ти будеш любити мене?
+                    </div>
+                    <div class="example-item">
+                      ✅ I will love you forever - Я буду любити тебе завжди
+                    </div>
+                    <div class="example-item">
+                      ❌ She will not love him - Вона не буде любити його
+                    </div>
+                    <div class="example-item">
+                      ❓ Will they come? - Вони прийдуть?
+                    </div>
+                    <div class="example-item">
+                      ✅ We will go tomorrow - Ми підемо завтра
+                    </div>
+                    <div class="example-item">
+                      ❌ He will not forget - Він не забуде
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- DO row -->
+            <tr>
+              <td class="left-label">DO</td>
+              <td class="section-cell" data-section="question">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="question">
+                <div class="verb-form">
+                  <div class="verb-item">LOVE ?</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="verb-form">
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="verb-form">
+                  <div class="verb-item">DON'T</div>
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="right-label present">ТЕПЕРІШНЄ</td>
+            </tr>
+            <tr class="example-row" data-row="do">
+              <td colspan="8">
+                <div class="example-content">
+                  <h4>📖 Приклади використання DO:</h4>
+                  <div class="example-list">
+                    <div class="example-item">
+                      ❓ Do you love coffee? - Ти любиш каву?
+                    </div>
+                    <div class="example-item">
+                      ✅ I love music - Я люблю музику
+                    </div>
+                    <div class="example-item">
+                      ❌ They don't love winter - Вони не люблять зиму
+                    </div>
+                    <div class="example-item">
+                      ❓ Do we need help? - Нам потрібна допомога?
+                    </div>
+                    <div class="example-item">
+                      ✅ You speak English - Ти говориш англійською
+                    </div>
+                    <div class="example-item">
+                      ❌ I don't understand - Я не розумію
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- DOES row -->
+            <tr>
+              <td class="left-label">DOES</td>
+              <td class="section-cell" data-section="question">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="question">
+                <div class="verb-form">
+                  <div class="verb-item">LOVE ?</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="verb-form">
+                  <div class="verb-item">LOVES</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="verb-form">
+                  <div class="verb-item">DOESN'T</div>
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="right-label present">ТЕПЕРІШНЄ</td>
+            </tr>
+            <tr class="example-row" data-row="does">
+              <td colspan="8">
+                <div class="example-content">
+                  <h4>📖 Приклади використання DOES:</h4>
+                  <div class="example-list">
+                    <div class="example-item">
+                      ❓ Does he love her? - Він любить її?
+                    </div>
+                    <div class="example-item">
+                      ✅ She loves cats - Вона любить котів
+                    </div>
+                    <div class="example-item">
+                      ❌ He doesn't love sports - Він не любить спорт
+                    </div>
+                    <div class="example-item">
+                      ❓ Does it work? - Це працює?
+                    </div>
+                    <div class="example-item">
+                      ✅ He speaks French - Він говорить французькою
+                    </div>
+                    <div class="example-item">
+                      ❌ She doesn't know - Вона не знає
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- DID row -->
+            <tr>
+              <td class="left-label">DID</td>
+              <td class="section-cell" data-section="question">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="question">
+                <div class="verb-form">
+                  <div class="verb-item">LOVE ?</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="affirmative">
+                <div class="verb-form">
+                  <div class="verb-item">SAW</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="cell-group">
+                  <div class="pronouns">
+                    <div class="pronouns-item">I</div>
+                    <div class="pronouns-item">YOU</div>
+                    <div class="pronouns-item">WE</div>
+                    <div class="pronouns-item">THEY</div>
+                    <div class="pronouns-item">HE</div>
+                    <div class="pronouns-item">SHE</div>
+                  </div>
+                  <div class="brace">}</div>
+                </div>
+              </td>
+              <td class="section-cell" data-section="negative">
+                <div class="verb-form">
+                  <div class="verb-item">DID</div>
+                  <div class="verb-item">NOT</div>
+                  <div class="verb-item">LOVE</div>
+                </div>
+              </td>
+              <td class="right-label past">МИНУЛЕ</td>
+            </tr>
+            <tr class="example-row" data-row="did">
+              <td colspan="8">
+                <div class="example-content">
+                  <h4>📖 Приклади використання DID:</h4>
+                  <div class="example-list">
+                    <div class="example-item">
+                      ❓ Did you love the movie? - Тобі сподобався фільм?
+                    </div>
+                    <div class="example-item">
+                      ✅ I saw him yesterday - Я бачив його вчора
+                    </div>
+                    <div class="example-item">
+                      ❌ She did not love it - Їй це не сподобалось
+                    </div>
+                    <div class="example-item">
+                      ❓ Did they go? - Вони пішли?
+                    </div>
+                    <div class="example-item">
+                      ✅ We finished the work - Ми закінчили роботу
+                    </div>
+                    <div class="example-item">
+                      ❌ He did not understand - Він не зрозумів
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>
+        💡 <strong>Порада:</strong> Використовуйте режим тренування, щоб
+        перевірити свої знання!
+      </p>
+      <p>Створено для ефективного вивчення англійської мови</p>
+    </div>
+
+    <script type="module" src="/index.js"></script>
+  </body>
+</html>
